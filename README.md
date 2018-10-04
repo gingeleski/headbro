@@ -1,7 +1,7 @@
 
 # Headless Browser Page Rendering Service
 
-Renders HTTP responses via headless browser (Chrome).
+Headless browser rendering service for HTTP responses. Uses Google Chrome.
 
 ## Setup
 
