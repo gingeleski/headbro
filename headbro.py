@@ -1,7 +1,7 @@
 """
-hbprs.py
+headbro.py
 
-Headless Browser Page Rendering Service (HBPRS)
+Headless browser rendering service for HTTP responses.
 
 Send a POST request to the service where body is just the URL to GET
 
