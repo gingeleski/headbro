@@ -23,7 +23,9 @@ from flask import Flask, request, Response
 from selenium import webdriver
 
 import atexit
+import json
 import time
+import validators
 
 def exit_handler():
     driver.quit()
@@ -33,13 +35,55 @@ app = Flask(__name__)
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('headless')
 
-driver = webdriver.Chrome(chrome_options = chrome_options)
+driver = webdriver.Chrome(chrome_options = chrome_options)   
 
-@app.route('/', methods=['POST'])
+@app.route('/render', methods=['POST'])
 def get_and_render():
-    target = request.get_data().decode('utf-8')
-    driver.get(target)
-    return Response(str(driver.page_source), status=200, mimetype='text/plain')
+    request_body = request.get_data().decode('utf-8')
+    try:
+        request_json = json.loads(request_body)
+        if 'url' in request_json:
+            target_url = request_json['url']
+            if True == validators.url(target_url):
+                request_method = 'GET'
+                # See if there's another method specified via input
+                if 'method' in request_json and str(request_json['method']).lower() != 'get':
+                    parsed_method = str(request_json['method']).lower()
+                    if parsed_method == 'post':
+                        pass # TODO
+                    elif parsed_method == 'put':
+                        pass # TODO
+                    elif parsed_method == 'delete':
+                        pass # TODO
+                    else:
+                        return Response('Input JSON has invalid "method": %s' % parsed_method, status=400, mimetype='text/plain')
+                if 'invoke_events' in request_json:
+                    parsed_invoke_events = request_json['invoke_events']
+                    if type(parsed_invoke_events) is list:
+                        for parsed_event in parsed_invoke_events:
+                            pass # TODO
+                    else:
+                        return Response('Input JSON has invalid "invoke_events"', status=400, mimetype='text/plain')
+                # Execute request with headless Chrome
+                driver.get(target_url) # TODO eventually handle other HTTP methods about here
+                output = {}
+                output['body'] = driver.page_source
+                # TODO - apparently we can't get response status or headers with Selenium
+                output['status_code'] = None
+                output['headers'] = {}
+                # TODO populate the following
+                output['errors'] = []
+                output['messages'] = []
+                output['alerts'] = []
+                output['confirms'] = []
+                output['prompts'] = []
+                return json.dumps(output)
+            else:
+                return Response('Invalid URL: %s' % target_url, status=400, mimetype='text/plain')
+        else:
+            return Response('Input JSON object missing required "url" field', status=400, mimetype='text/plain')
+    except ValueError as error:
+        return Response('Invalid JSON: %s' % error, status=400, mimetype='text/plain')
 
 if __name__ == '__main__':
     atexit.register(exit_handler)
