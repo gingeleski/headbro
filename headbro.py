@@ -33,9 +33,12 @@ def exit_handler():
 app = Flask(__name__)
 
 chrome_options = webdriver.ChromeOptions()
+
 chrome_options.add_argument('headless')
 
-driver = webdriver.Chrome(chrome_options = chrome_options)   
+driver = webdriver.Chrome(chrome_options = chrome_options)
+
+driver.set_page_load_timeout(10) # 10 second timeout on any page loads
 
 @app.route('/render', methods=['POST'])
 def get_and_render():
