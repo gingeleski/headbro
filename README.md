@@ -18,6 +18,8 @@ At this point the service should be up on `localhost:9009` for you to hit with r
 
 ## API
 
+*Note: this is abridged API doc for getting your feet wet.*
+
 `POST /render`
 
 - Input (JSON object)
@@ -28,50 +30,19 @@ At this point the service should be up on `localhost:9009` for you to hit with r
         - optional
             - defaults to `get`
         - string
-        - must be one of the following (case-insensitive)
-            - `get`
-            - `post` *unsupported right now*
-            - `put` *unsupported right now*
-            - `delete` *unsupported right now*
     - `invoke_events`
         - optional
-            - defaults to `[]` (none)
         - list of strings
-        - valid options are the following (case-insensitive)
-            - `click` *unsupported right now*
-            - `mouseover` *unsupported right now*
 - Output (JSON object)
     - `body`
-        - string
     - `status_code`
-        - number/integer
     - `errors`
-        - list of strings
-        - error messages written to JS console
     - `messages`
-        - list of strings
-        - info messages written to JS console
     - `alerts`
-        - list of strings
-        - alert popups
     - `confirms`
-        - list of strings
-        - confirm popups
     - `prompts`
-        - list of strings
-        - prompt popups
-       
-`POST /configure`
-
-*Planned, will allow service-wide configuration changes to the driver.*
-
-`GET /cookies`
-
-*Planned, will just return all the browser's cookies.*
-
-`POST /cookies/clear`
-
-*Planned, will delete cookies, can specify the scope.*
+    
+Check out the [**full wiki page**](https://github.com/gingeleski/headbro/wiki/API-documentation) ~~or **OpenAPI spec**~~!!
 
 ## Credit
 
