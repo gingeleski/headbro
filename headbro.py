@@ -21,6 +21,9 @@ Eventually it'll all be formatted as follows...
 
 from flask import Flask, request, Response
 from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 
 import atexit
 import json
@@ -74,12 +77,28 @@ def get_and_render():
                 # TODO - apparently we can't get response status or headers with Selenium
                 output['status_code'] = None
                 output['headers'] = {}
-                # TODO populate the following
                 output['errors'] = []
                 output['messages'] = []
                 output['alerts'] = []
                 output['confirms'] = []
                 output['prompts'] = []
+                # Get console errors and other messages
+                for log in driver.get_log('browser'):
+                    if log['level'] and log['level'] == 'SEVERE']:
+                        # Consider this an error
+                        output['errors'].append(log)
+                    else:
+                        # Everything else we'll call a console message
+                        output['messages'].append(log)
+                # For now just putting all popups as alerts...
+                try:
+                    WebDriverWait(driver,1).until(EC.alert_is_present(), 'Timed out, JS no popups.')
+                    popup = driver.switch_to.alert
+                    output['alerts'].append(popup.text)
+                    popup.accept()
+                except TimeoutException:
+                    # Do nothing
+                    pass
                 return json.dumps(output)
             else:
                 return Response('Invalid URL: %s' % target_url, status=400, mimetype='text/plain')
