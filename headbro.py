@@ -90,15 +90,29 @@ def get_and_render():
                     else:
                         # Everything else we'll call a console message
                         output['messages'].append(log)
-                # For now just putting all popups as alerts...
-                try:
-                    WebDriverWait(driver,1).until(EC.alert_is_present(), 'Timed out, JS no popups.')
-                    popup = driver.switch_to.alert
-                    output['alerts'].append(popup.text)
-                    popup.accept()
-                except TimeoutException:
-                    # Do nothing
-                    pass
+                # Loop to handle all JavaScript popups
+                while True:
+                    try:
+                        WebDriverWait(driver,1).until(EC.alert_is_present(), 'No JS popups - timed out.')
+                        popup = driver.switch_to.alert
+                        try:
+                            popup.send_keys('test123')
+                            # If no exception, this is a *prompt* popup
+                            output['prompts'].append(popup.text)
+                            popup.accept()
+                        except AttributeError:
+                            try:
+                                text_backup = copy.deepcopy(popup.text)
+                                popup.dismiss()
+                                # If no exception, this is a *confirm* popup
+                                output['confirms'].append(text_backup)
+                            except AttributeError:
+                                # Must be an *alert* popup at this point
+                                output['alerts'].append(popup.text)
+                                popup.accept()
+                    except TimeoutException:
+                        # Break on timeout, no (more) popups
+                        break
                 return json.dumps(output)
             else:
                 return Response('Invalid URL: %s' % target_url, status=400, mimetype='text/plain')
