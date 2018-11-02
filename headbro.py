@@ -63,6 +63,9 @@ def get_and_render():
                         pass # TODO
                     else:
                         return Response('Input JSON has invalid "method": %s' % parsed_method, status=400, mimetype='text/plain')
+                if 'script' in request_json:
+                    script_to_execute = request_json['script']
+                    driver.execute_script(script_to_execute)
                 if 'invoke_events' in request_json:
                     parsed_invoke_events = request_json['invoke_events']
                     if type(parsed_invoke_events) is list:

@@ -7,7 +7,7 @@ Headless browser rendering service for HTTP responses. Uses Google Chrome.
 
 First download [**chromedriver.exe**](https://sites.google.com/a/chromium.org/chromedriver/downloads) (>= v2.32) into the repo directory.
 
-Then you can do the following from your prompt... and I recommend doing so from a [**virtual environment**](https://docs.python.org/3/library/venv.html).
+Then you can do the following from your prompt... recommended to do so from a [**virtual environment**](https://docs.python.org/3/library/venv.html).
 
 ```
 pip install -r requirements.txt
@@ -29,6 +29,9 @@ At this point the service should be up on `localhost:9009` for you to hit with r
     - `method`
         - optional
             - defaults to `get`
+        - string
+    - `script`
+        - optional
         - string
     - `invoke_events`
         - optional
