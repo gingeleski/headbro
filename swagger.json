@@ -1,0 +1,233 @@
+{
+  "paths": {
+    "/render": {
+      "post": {
+        "operationId": "render.post",
+        "summary": "Make an HTTP request and render the response in headless Chrome.",
+        "description": "Make an HTTP request, load the response in headless Chrome (\"renders\" it), then return the DOM and other outputs. Can configure how the request is made and how the response is handled.",
+        "responses": {
+          "200": {
+            "description": "Normal or \"happy path\" response.",
+            "schema": {
+              "x-oad-type": "object",
+              "type": "object",
+              "properties": {
+                "body": {
+                  "x-oad-type": "string",
+                  "type": "string",
+                  "title": "Response body"
+                },
+                "status_code": {
+                  "x-oad-type": "integer",
+                  "type": "integer",
+                  "title": "Response status code",
+                  "description": "HTTP response status code.",
+                  "format": "int32"
+                },
+                "errors": {
+                  "x-oad-type": "array",
+                  "type": "array",
+                  "title": "Errors from console",
+                  "description": "Errors as one would typically find output to the JavaScript console under Developer Tools.",
+                  "items": {
+                    "x-oad-type": "object",
+                    "type": "object"
+                  }
+                },
+                "messages": {
+                  "x-oad-type": "array",
+                  "type": "array",
+                  "title": "Messages from console",
+                  "description": "Messages as one would typically find output to the JavaScript console under Developer Tools.",
+                  "items": {
+                    "x-oad-type": "object",
+                    "type": "object"
+                  }
+                },
+                "alerts": {
+                  "x-oad-type": "array",
+                  "type": "array",
+                  "title": "Alert popups",
+                  "description": "Text from JavaScript `alert()` popups.",
+                  "items": {
+                    "x-oad-type": "string",
+                    "type": "string"
+                  }
+                },
+                "confirms": {
+                  "x-oad-type": "array",
+                  "type": "array",
+                  "title": "Confirm popups",
+                  "description": "Text from JavaScript `confirm()` popups.",
+                  "items": {
+                    "x-oad-type": "string",
+                    "type": "string"
+                  }
+                },
+                "prompts": {
+                  "x-oad-type": "array",
+                  "type": "array",
+                  "title": "Prompt popups",
+                  "description": "Text from JavaScript `prompt()` popups.",
+                  "items": {
+                    "x-oad-type": "string",
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "body",
+                "status_code",
+                "errors",
+                "messages",
+                "alerts",
+                "confirms",
+                "prompts"
+              ]
+            },
+            "x-oad-type": "response"
+          },
+          "400": {
+            "description": "Bad request error; inputs did not pass validation.",
+            "schema": {
+              "x-oad-type": "string",
+              "type": "string",
+              "title": "Error message",
+              "description": "The plain string body of this error response will describe causation."
+            },
+            "x-oad-type": "response"
+          }
+        },
+        "parameters": [
+          {
+            "name": "url",
+            "in": "body",
+            "description": "Destination for the HTTP request that will execute.",
+            "required": true,
+            "schema": {
+              "x-oad-type": "string",
+              "type": "string"
+            },
+            "x-oad-type": "parameter"
+          },
+          {
+            "name": "method",
+            "in": "body",
+            "description": "HTTP request method.",
+            "required": false,
+            "schema": {
+              "x-oad-type": "string",
+              "type": "string",
+              "enum": [
+                "get",
+                "post",
+                "put",
+                "delete"
+              ],
+              "default": "get"
+            },
+            "x-oad-type": "parameter"
+          },
+          {
+            "name": "script",
+            "in": "body",
+            "description": "JavaScript to run on the page after the response is loaded but before state is written to output.",
+            "required": false,
+            "schema": {
+              "x-oad-type": "string",
+              "type": "string"
+            },
+            "x-oad-type": "parameter"
+          },
+          {
+            "name": "invoke_events",
+            "in": "body",
+            "description": "Page events for which invocation should be attempted before writing state to output. For example, including \"mouseover\" in this list will cause every element in the rendered DOM to be 'moused' over.",
+            "required": false,
+            "schema": {
+              "x-oad-type": "array",
+              "type": "array",
+              "items": {
+                "x-oad-type": "string",
+                "type": "string",
+                "enum": [
+                  "click",
+                  "mouseover"
+                ]
+              },
+              "uniqueItems": true
+            },
+            "x-oad-type": "parameter"
+          }
+        ]
+      },
+      "x-oad-type": "operation"
+    },
+    "/configure": {
+      "post": {
+        "operationId": "configure.post",
+        "summary": "Make service-wide configuration changes to the driver.",
+        "responses": {
+          "404": {
+            "description": "Default response as this is planned but not yet implemented.",
+            "x-oad-type": "response"
+          }
+        }
+      },
+      "x-oad-type": "operation"
+    },
+    "/cookies": {
+      "get": {
+        "operationId": "cookies.get",
+        "summary": "Get all browser cookies from the driver.",
+        "responses": {
+          "404": {
+            "description": "Default response as this is planned but not yet implemented.",
+            "x-oad-type": "response"
+          }
+        }
+      },
+      "x-oad-type": "operation"
+    },
+    "/cookies/clear": {
+      "post": {
+        "operationId": "cookies_clear.post",
+        "summary": "Delete browser cookies from the driver.",
+        "description": "Delete browser cookies from the driver within a configurable scope.",
+        "responses": {
+          "404": {
+            "description": "Default response as this is planned but not yet implemented.",
+            "x-oad-type": "response"
+          }
+        }
+      },
+      "x-oad-type": "operation"
+    }
+  },
+  "info": {
+    "title": "headbro",
+    "version": "1.0",
+    "description": "Headless browser rendering service for HTTP responses.",
+    "contact": {
+      "name": "Randy Gingeleski",
+      "url": "https://github.com/gingeleski/headbro"
+    },
+    "license": {
+      "name": "GNU General Public License v3",
+      "url": "https://www.gnu.org/licenses/gpl-3.0.en.html"
+    }
+  },
+  "externalDocs": {
+    "description": "Find out more about this service and API on the headbro Github, especially the wiki.",
+    "url": "https://github.com/gingeleski/headbro/wiki"
+  },
+  "host": "127.0.0.1:9009",
+  "basePath": "/",
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "swagger": "2.0"
+}

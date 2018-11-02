@@ -45,7 +45,7 @@ At this point the service should be up on `localhost:9009` for you to hit with r
     - `confirms`
     - `prompts`
     
-Check out the [**full wiki page**](https://github.com/gingeleski/headbro/wiki/API-documentation) ~~or **OpenAPI spec**~~!!
+Check out the [**full wiki page**](https://github.com/gingeleski/headbro/wiki/API-documentation) or [**OpenAPI spec**](https://github.com/gingeleski/headbro/blob/master/swagger.json)!!
 
 ## Credit
 
