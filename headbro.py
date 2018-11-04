@@ -23,9 +23,10 @@ from flask import Flask, request, Response
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import ElementNotSelectableException, TimeoutException
 
 import atexit
+import copy
 import json
 import time
 import validators
@@ -76,23 +77,12 @@ def get_and_render():
                 # Execute request with headless Chrome
                 driver.get(target_url) # TODO eventually handle other HTTP methods about here
                 output = {}
-                output['body'] = driver.page_source
                 # TODO - apparently we can't get response status or headers with Selenium
                 output['status_code'] = None
                 output['headers'] = {}
-                output['errors'] = []
-                output['messages'] = []
                 output['alerts'] = []
                 output['confirms'] = []
                 output['prompts'] = []
-                # Get console errors and other messages
-                for log in driver.get_log('browser'):
-                    if log['level'] and log['level'] == 'SEVERE']:
-                        # Consider this an error
-                        output['errors'].append(log)
-                    else:
-                        # Everything else we'll call a console message
-                        output['messages'].append(log)
                 # Loop to handle all JavaScript popups
                 while True:
                     try:
@@ -103,19 +93,32 @@ def get_and_render():
                             # If no exception, this is a *prompt* popup
                             output['prompts'].append(popup.text)
                             popup.accept()
-                        except AttributeError:
+                        except ElementNotSelectableException:
                             try:
-                                text_backup = copy.deepcopy(popup.text)
+                                ###text_backup = copy.deepcopy(popup.text)
+                                # FIXME currently can't differentiate between confirms and alerts, put both as alerts
+                                output['alerts'].append(popup.text)
                                 popup.dismiss()
                                 # If no exception, this is a *confirm* popup
-                                output['confirms'].append(text_backup)
+                                ###output['confirms'].append(text_backup)
                             except AttributeError:
                                 # Must be an *alert* popup at this point
-                                output['alerts'].append(popup.text)
+                                ###output['alerts'].append(popup.text)
                                 popup.accept()
                     except TimeoutException:
                         # Break on timeout, no (more) popups
                         break
+                output['errors'] = []
+                output['messages'] = []
+                # Get console errors and other messages
+                for log in driver.get_log('browser'):
+                    if log['level'] and log['level'] == 'SEVERE':
+                        # Consider this an error
+                        output['errors'].append(log)
+                    else:
+                        # Everything else we'll call a console message
+                        output['messages'].append(log)
+                output['body'] = driver.page_source
                 return json.dumps(output)
             else:
                 return Response('Invalid URL: %s' % target_url, status=400, mimetype='text/plain')

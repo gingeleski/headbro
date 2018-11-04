@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Everything 1 test</title>
+</head>
+<body>
+    <h1>Everything 1</h1>
+    <p id="firstpar">Lorem ipsum dotem blah blah blah.</p>
+    <script src="jquery.min.js"></script>
+    <script>
+        $('#firstpar').append('<p>This is rendered text.</p>');
+    </script>
+    <script>
+        alert('Alert popup test!');
+        confirm('Are you sure you want to confirm test?');
+        prompt('This is a prompt popup test:');
+    </script>
+    <script>
+        $('h1').append('<h2>Does this render too?</h2>');
+    </script>
+</body>
+</html>

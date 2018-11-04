@@ -112,3 +112,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Visual Studio Code artifacts dir
+.vscode/
+
+# Ignore executables (chromedriver.exe is why I added this)
+*.exe
