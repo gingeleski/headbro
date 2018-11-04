@@ -19,6 +19,7 @@ Eventually it'll all be formatted as follows...
 
 """
 
+from browsermobproxy import Server
 from flask import Flask, request, Response
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -28,20 +29,35 @@ from selenium.common.exceptions import ElementNotSelectableException, TimeoutExc
 import atexit
 import copy
 import json
+import psutil
 import time
 import validators
 
+BROWSERMOB_PROXY_PATH = './dependencies/browsermob-proxy-2.1.4/browsermob-proxy'
+
 def exit_handler():
+    browsermob_server.stop()
     driver.quit()
 
 app = Flask(__name__)
 
+# Set up BrowserMob proxy
+for proc in psutil.process_iter():
+    # Kill BrowserMob if it happens to already be running
+    if proc.name() == 'browsermob-proxy':
+        proc.kill()
+browsermob_options = {'port': 8090}
+browsermob_server = Server(path=BROWSERMOB_PROXY_PATH, options=browsermob_options)
+browsermob_server.start()
+time.sleep(1)
+proxy = browsermob_server.create_proxy()
+time.sleep(1)
+selenium_proxy = proxy.selenium_proxy()
+
+# Set up the Selenium driver for headless Chrome
 chrome_options = webdriver.ChromeOptions()
-
 chrome_options.add_argument('headless')
-
 driver = webdriver.Chrome(chrome_options = chrome_options)
-
 driver.set_page_load_timeout(10) # 10 second timeout on any page loads
 
 @app.route('/render', methods=['POST'])
