@@ -96,7 +96,6 @@ def get_and_render():
                 # Execute request with headless Chrome
                 driver.get(target_url) # TODO eventually handle other HTTP methods about here
                 output = {}
-                # TODO - apparently we can't get response status or headers with Selenium
                 status_code_via_proxy = proxy.har['log']['entries'][0]['response']['status']
                 response_headers_via_proxy = proxy.har['log']['entries'][0]['response']['headers']
                 output['status_code'] = status_code_via_proxy
