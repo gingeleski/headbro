@@ -53,7 +53,6 @@ browsermob_server.start()
 time.sleep(1)
 proxy = browsermob_server.create_proxy()
 time.sleep(1)
-##selenium_proxy = proxy.selenium_proxy()
 
 # Set up the Selenium driver for headless Chrome
 chrome_options = webdriver.ChromeOptions()
@@ -98,8 +97,10 @@ def get_and_render():
                 driver.get(target_url) # TODO eventually handle other HTTP methods about here
                 output = {}
                 # TODO - apparently we can't get response status or headers with Selenium
-                output['status_code'] = None
-                output['headers'] = {}
+                status_code_via_proxy = proxy.har['log']['entries'][0]['response']['status']
+                response_headers_via_proxy = proxy.har['log']['entries'][0]['response']['headers']
+                output['status_code'] = status_code_via_proxy
+                output['headers'] = response_headers_via_proxy
                 output['alerts'] = []
                 output['confirms'] = []
                 output['prompts'] = []
@@ -139,8 +140,6 @@ def get_and_render():
                         # Everything else we'll call a console message
                         output['messages'].append(log)
                 output['body'] = driver.page_source
-                # DEBUG PRINT THE HAR OBJECT
-                print(proxy.har)
                 return json.dumps(output)
             else:
                 return Response('Invalid URL: %s' % target_url, status=400, mimetype='text/plain')
