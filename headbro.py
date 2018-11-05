@@ -29,11 +29,12 @@ from selenium.common.exceptions import ElementNotSelectableException, TimeoutExc
 import atexit
 import copy
 import json
+import os
 import psutil
 import time
 import validators
 
-BROWSERMOB_PROXY_PATH = './dependencies/browsermob-proxy-2.1.4/browsermob-proxy'
+BROWSERMOB_PROXY_PATH = os.path.join('dependencies', 'browsermob-proxy-2.1.4', 'bin', 'browsermob-proxy')
 
 def exit_handler():
     browsermob_server.stop()
@@ -52,11 +53,12 @@ browsermob_server.start()
 time.sleep(1)
 proxy = browsermob_server.create_proxy()
 time.sleep(1)
-selenium_proxy = proxy.selenium_proxy()
+##selenium_proxy = proxy.selenium_proxy()
 
 # Set up the Selenium driver for headless Chrome
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('headless')
+chrome_options.add_argument('--proxy-server={0}'.format(proxy.proxy))
 driver = webdriver.Chrome(chrome_options = chrome_options)
 driver.set_page_load_timeout(10) # 10 second timeout on any page loads
 
@@ -90,6 +92,8 @@ def get_and_render():
                             pass # TODO
                     else:
                         return Response('Input JSON has invalid "invoke_events"', status=400, mimetype='text/plain')
+                # Prep a har object to get this from the proxy
+                proxy.new_har('this_request')
                 # Execute request with headless Chrome
                 driver.get(target_url) # TODO eventually handle other HTTP methods about here
                 output = {}
@@ -135,6 +139,8 @@ def get_and_render():
                         # Everything else we'll call a console message
                         output['messages'].append(log)
                 output['body'] = driver.page_source
+                # DEBUG PRINT THE HAR OBJECT
+                print(proxy.har)
                 return json.dumps(output)
             else:
                 return Response('Invalid URL: %s' % target_url, status=400, mimetype='text/plain')
