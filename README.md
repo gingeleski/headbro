@@ -7,7 +7,13 @@ Headless browser rendering service for HTTP responses. Uses Google Chrome.
 
 First download [**chromedriver.exe**](https://sites.google.com/a/chromium.org/chromedriver/downloads) (>= v2.32) into the repo directory.
 
-Then you can do the following from your prompt... recommended to do so from a [**virtual environment**](https://docs.python.org/3/library/venv.html).
+Then you'll also need to download the [**BrowserMob v2.1.4 binaries**](https://github.com/lightbody/browsermob-proxy/releases/download/browsermob-proxy-2.1.4/browsermob-proxy-2.1.4-bin.zip), altering the script's `BROWSERMOB_PROXY_PATH` var to point where you extract the folder inside.
+
+BrowserMob relies on Java so ensure that's on the path such that you can run `java` from a prompt.
+
+The main code is Python 3.x based, in case that's not clear. You need `python` and `pip` to be available from your prompt.
+
+Now do the following from your prompt, recommended with a [**virtual environment**](https://docs.python.org/3/library/venv.html).
 
 ```
 pip install -r requirements.txt
