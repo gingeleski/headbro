@@ -118,3 +118,6 @@ dmypy.json
 
 # Ignore executables (chromedriver.exe is why I added this)
 *.exe
+
+# Ignore the dependencies directory I make for binaries
+dependencies/
