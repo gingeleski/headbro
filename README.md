@@ -53,6 +53,14 @@ At this point the service should be up on `localhost:9009` for you to hit with r
     
 Check out the [**full wiki page**](https://github.com/gingeleski/headbro/wiki/API-documentation) or [**OpenAPI spec**](https://github.com/gingeleski/headbro/blob/master/swagger.json)!!
 
+## Testing
+
+There is some test webpage content in `test/`.
+
+You can - in a different prompt than where you'll run headbro - make that the present working directory then run `python -m http.server`.
+
+Finally, request that headbro render test pages by giving URLs like `http://127.0.0.1:8000/everything1.html`.
+
 ## Credit
 
 This project takes inspiration from the original release of [**xssmap**](https://github.com/secdec/xssmap), which included a [**phantomjs**](https://en.wikipedia.org/wiki/PhantomJS) rendering engine. It was used there for security stuff (like the creation of this was for) but designed generally (also like this).
