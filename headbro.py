@@ -112,12 +112,22 @@ def get_and_render():
                 # Prep a har object to get this from the proxy
                 proxy.new_har('this_request')
                 # Execute request with headless Chrome
-                driver.get(target_url) # TODO eventually handle other HTTP methods about here
+                try:
+                    driver.get(target_url) # TODO eventually handle other HTTP methods about here
+                except:
+                    # *Right now assuming exception is for timeout*
+                    return Response('Request timed out', status=504, mimetype='text/plain')
                 output = {}
-                status_code_via_proxy = proxy.har['log']['entries'][0]['response']['status']
-                response_headers_via_proxy = proxy.har['log']['entries'][0]['response']['headers']
-                output['status_code'] = status_code_via_proxy
-                output['headers'] = response_headers_via_proxy
+                try:
+                    status_code_via_proxy = proxy.har['log']['entries'][0]['response']['status']
+                    output['status_code'] = status_code_via_proxy
+                except:
+                    output['status_code'] = 0
+                try:
+                    response_headers_via_proxy = proxy.har['log']['entries'][0]['response']['headers']
+                    output['headers'] = response_headers_via_proxy
+                except:
+                    output['headers'] = {}
                 output['alerts'] = []
                 output['confirms'] = []
                 output['prompts'] = []
