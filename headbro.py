@@ -57,7 +57,25 @@ time.sleep(1)
 # Set up the Selenium driver for headless Chrome
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('headless')
-chrome_options.add_argument('--proxy-server={0}'.format(proxy.proxy))
+chrome_options.add_argument('proxy-server={0}'.format(proxy.proxy))
+# Start: "Pen testing" options
+chrome_options.add_argument('disable-web-security')
+chrome_options.add_argument('allow-running-insecure-content')
+chrome_options.add_argument('disable-client-side-phishing-detection')
+chrome_options.add_argument('disable-extensions')
+chrome_options.add_argument('disable-offer-store-unmasked-wallet-cards')
+chrome_options.add_argument('disable-offer-upload-credit-cards')
+chrome_options.add_argument('disable-popup-blocking')
+chrome_options.add_argument('disable-signin-promo')
+chrome_options.add_argument('disable-suggestions-ui')
+chrome_options.add_argument('disable-sync')
+chrome_options.add_argument('disable-xss-auditor')
+chrome_options.add_argument('ignore-certificate-errors')
+chrome_options.add_argument('reduce-security-for-testing')
+chrome_options.add_argument('safe-browsing-disable-auto-update')
+chrome_options.add_argument('safe-browsing-disable-download-protection')
+chrome_options.add_argument('safe-browsing-disable-extension-blacklist')
+# End: "Pen testing" options
 driver = webdriver.Chrome(chrome_options = chrome_options)
 driver.set_page_load_timeout(10) # 10 second timeout on any page loads
 
@@ -94,12 +112,22 @@ def get_and_render():
                 # Prep a har object to get this from the proxy
                 proxy.new_har('this_request')
                 # Execute request with headless Chrome
-                driver.get(target_url) # TODO eventually handle other HTTP methods about here
+                try:
+                    driver.get(target_url) # TODO eventually handle other HTTP methods about here
+                except:
+                    # *Right now assuming exception is for timeout*
+                    return Response('Request timed out', status=504, mimetype='text/plain')
                 output = {}
-                status_code_via_proxy = proxy.har['log']['entries'][0]['response']['status']
-                response_headers_via_proxy = proxy.har['log']['entries'][0]['response']['headers']
-                output['status_code'] = status_code_via_proxy
-                output['headers'] = response_headers_via_proxy
+                try:
+                    status_code_via_proxy = proxy.har['log']['entries'][0]['response']['status']
+                    output['status_code'] = status_code_via_proxy
+                except:
+                    output['status_code'] = 0
+                try:
+                    response_headers_via_proxy = proxy.har['log']['entries'][0]['response']['headers']
+                    output['headers'] = response_headers_via_proxy
+                except:
+                    output['headers'] = {}
                 output['alerts'] = []
                 output['confirms'] = []
                 output['prompts'] = []
