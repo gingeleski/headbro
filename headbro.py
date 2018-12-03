@@ -58,6 +58,19 @@ def derive_url_from_request_string(rs):
             break
     return derived_url
 
+def get_method_from_request_string(rs):
+    first_char = rs[0]
+    second_char = rs[1]
+    if first_char.lower() == 'd':
+        return 'DELETE'
+    elif first_char.lower() == 'p':
+        if second_char.lower() == 'u':
+            return 'PUT'
+        elif second_char.lower() == 'o':
+            return 'POST'
+    # By default we assume GET as the method
+    return 'GET'
+
 def get_headers_from_request_string(rs):
     headers = {}
     rs_lines = rs.splitlines()
@@ -71,6 +84,10 @@ def get_headers_from_request_string(rs):
             # Assume we've hit the line break before request body
             break
     return headers
+
+def set_canary_triggered_request_interceptor(method, url, headers, body=None):
+    # TODO
+    return 'http://abcdefgh1234.com'
 
 ########################################################################################################################
 
@@ -232,8 +249,19 @@ def render_via_string():
                 else:
                     url = derive_url_from_request_string(request_string)
                 print('DEBUG: url = ' + url)
+                method = get_method_from_request_string(request_string)
+                print('DEBUG: method = ' + method)
                 headers = get_headers_from_request_string(request_string)
-                # TODO
+                print('DEBUG: headers = ' + str(headers))
+                # Is there a request body to consider?
+                if 'Content-Length' in headers or 'Transfer-Encoding' in headers:
+                    body = get_body_from_request_string(request_string)
+                    canary_url = set_canary_triggered_request_interceptor(method, url, headers, body)
+                else:
+                    canary_url = set_canary_triggered_request_interceptor(method, url, headers)
+                # TODO make a request to the canary url
+                # TODO store the output (response) object to send back
+                # TODO disable that canary-triggered request interceptor, we hypothetically shouldn't need it anymore
                 return Response('OK', status=200, mimetype='text/plain')
             return Response('Functionality not yet implemented', status=501, mimetype='text/plain')
         elif 'response_string' in request_json:
