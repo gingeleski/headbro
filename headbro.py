@@ -3,20 +3,6 @@ headbro.py
 
 Headless browser rendering service for HTTP responses.
 
-Send a POST request to the service where body is just the URL to GET
-
-Then it sends back rendered page source
-
-Eventually it'll all be formatted as follows...
-
-    {
-        html : base64-encoded string of the page's rendered html
-        errors : list of strings for javascript error() messages
-        messages : list of strings for javascript console.log() messages
-        confirms : list of strings for javascript confirm() messages
-        prompts : list of strings for javascript prompt() messages
-    }
-
 """
 
 from browsermobproxy import Server
