@@ -20,11 +20,59 @@ import psutil
 import time
 import validators
 
+########################################################################################################################
+
 BROWSERMOB_PROXY_PATH = os.path.join('dependencies', 'browsermob-proxy-2.1.4', 'bin', 'browsermob-proxy')
+
+########################################################################################################################
 
 def exit_handler():
     browsermob_server.stop()
     driver.quit()
+
+def request_string_is_valid(rs):
+    if rs.startswith('GET /') or rs.startswith('POST /') or rs.startswith('PUT /') or rs.startswith('DELETE /'):
+        if 'HTTP/1.1' in rs:
+            if 'Host: ' in rs or 'Origin: ' in rs:
+                return True
+    return False
+
+def derive_url_from_request_string(rs):
+    derived_url = ''
+    # Relative target - get from the first "/"" to " HTTP/"
+    rel_target_part = rs.startswith(' HTTP/')[0]
+    if rs.startswith('GET ') or rs.startswih('PUT '):
+        rel_target = rel_target_part[4:]
+    elif rs.startswith('POST '):
+        rel_target = rel_target_part[5:]
+    elif rs.startswith('DELETE '):
+        rel_target = rel_target_part[7:]
+    # Target domain will come from Host or Origin header of request string
+    rs_lines = rs.splitlines()
+    for rs_line in rs_lines:
+        if rs_line.startswith('Host: '):
+            derived_url = 'http://' + rs_line[6:] + rel_target
+            break
+        elif rs_line.startswith('Origin: '):
+            derived_url = 'http://' + rs_line[8:] + rel_target
+            break
+    return derived_url
+
+def get_headers_from_request_string(rs):
+    headers = {}
+    rs_lines = rs.splitlines()
+    for rs_line in rs_lines:
+        if rs_line.contains('HTTP/1.1'):
+            continue
+        elif rs_line.contains(': '):
+            header_parts = rs_line.split(': ')
+            headers[header_parts[0]] = header_parts[1]
+        else:
+            # Assume we've hit the line break before request body
+            break
+    return headers
+
+########################################################################################################################
 
 app = Flask(__name__)
 
@@ -65,6 +113,7 @@ chrome_options.add_argument('safe-browsing-disable-extension-blacklist')
 driver = webdriver.Chrome(chrome_options = chrome_options)
 driver.set_page_load_timeout(10) # 10 second timeout on any page loads
 
+########################################################################################################################
 
 """
 ROUTES
@@ -72,7 +121,6 @@ ROUTES
 /render (POST)
 /render/string (POST)
 """
-
 
 @app.route('/render', methods=['POST'])
 def get_and_render():
@@ -93,7 +141,8 @@ def get_and_render():
                     elif parsed_method == 'delete':
                         pass # TODO
                     else:
-                        return Response('Input JSON has invalid "method": %s' % parsed_method, status=400, mimetype='text/plain')
+                        return Response('Input JSON has invalid "method": %s' % parsed_method,\
+                                                                            status=400, mimetype='text/plain')
                 if 'script' in request_json:
                     script_to_execute = request_json['script']
                     driver.execute_script(script_to_execute)
@@ -170,14 +219,22 @@ def get_and_render():
     except ValueError as error:
         return Response('Invalid JSON: %s' % error, status=400, mimetype='text/plain')
 
-
 @app.route('/render/string', methods=['POST'])
 def render_via_string():
     request_body = request.get_data().decode('utf-8')
     try:
         request_json = json.loads(request_body)
         if 'request_string' in request_json:
-            # TODO
+            request_string = request_json['request_json']
+            if request_string_is_valid(request_string):
+                if 'url' in request_json:
+                    url = request_json['url']
+                else:
+                    url = derive_url_from_request_string(request_string)
+                print('DEBUG: url = ' + url)
+                headers = get_headers_from_request_string(request_string)
+                # TODO
+                return Response('OK', status=200, mimetype='text/plain')
             return Response('Functionality not yet implemented', status=501, mimetype='text/plain')
         elif 'response_string' in request_json:
             # TODO
@@ -187,6 +244,7 @@ def render_via_string():
     except ValueError as error:
         return Response('Invalid JSON: %s' % error, status=400, mimetype='text/plain')
 
+########################################################################################################################
 
 if __name__ == '__main__':
     atexit.register(exit_handler)
