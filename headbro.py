@@ -65,6 +65,15 @@ chrome_options.add_argument('safe-browsing-disable-extension-blacklist')
 driver = webdriver.Chrome(chrome_options = chrome_options)
 driver.set_page_load_timeout(10) # 10 second timeout on any page loads
 
+
+"""
+ROUTES
+
+/render (POST)
+/render/string (POST)
+"""
+
+
 @app.route('/render', methods=['POST'])
 def get_and_render():
     request_body = request.get_data().decode('utf-8')
@@ -160,6 +169,24 @@ def get_and_render():
             return Response('Input JSON object missing required "url" field', status=400, mimetype='text/plain')
     except ValueError as error:
         return Response('Invalid JSON: %s' % error, status=400, mimetype='text/plain')
+
+
+@app.route('/render/string', methods=['POST'])
+def render_via_string():
+    request_body = request.get_data().decode('utf-8')
+    try:
+        request_json = json.loads(request_body)
+        if 'request_string' in request_json:
+            # TODO
+            return Response('Functionality not yet implemented', status=501, mimetype='text/plain')
+        elif 'response_string' in request_json:
+            # TODO
+            return Response('Functionality not yet implemented', status=501, mimetype='text/plain')
+        else:
+            return Response('Input JSON object missing required field', status=400, mimetype='text/plain')
+    except ValueError as error:
+        return Response('Invalid JSON: %s' % error, status=400, mimetype='text/plain')
+
 
 if __name__ == '__main__':
     atexit.register(exit_handler)
