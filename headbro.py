@@ -85,6 +85,9 @@ def get_headers_from_request_string(rs):
             break
     return headers
 
+def get_body_from_request_string(rs):
+    return rs.splitlines()[-1]
+
 def set_canary_triggered_request_interceptor(method, url, headers, body=None):
     # TODO
     return 'http://abcdefgh1234.com'
