@@ -92,6 +92,67 @@ def set_canary_triggered_request_interceptor(method, url, headers, body=None):
     # TODO
     return 'http://abcdefgh1234.com'
 
+def simple_get_and_render(target_url):
+    # Prep a har object to get this from the proxy
+    proxy.new_har('this_request')
+    # Execute request with headless Chrome
+    try:
+        driver.get(target_url)
+    except:
+        # *Right now assuming exception is for timeout*
+        return Response('Request timed out', status=504, mimetype='text/plain')
+    output = {}
+    try:
+        status_code_via_proxy = proxy.har['log']['entries'][0]['response']['status']
+        output['status_code'] = status_code_via_proxy
+    except:
+        output['status_code'] = 0
+    try:
+        response_headers_via_proxy = proxy.har['log']['entries'][0]['response']['headers']
+        output['headers'] = response_headers_via_proxy
+    except:
+        output['headers'] = {}
+    output['alerts'] = []
+    output['confirms'] = []
+    output['prompts'] = []
+    # Loop to handle all JavaScript popups
+    while True:
+        try:
+            WebDriverWait(driver,1).until(EC.alert_is_present(), 'No JS popups - timed out.')
+            popup = driver.switch_to.alert
+            try:
+                popup.send_keys('test123')
+                # If no exception, this is a *prompt* popup
+                output['prompts'].append(popup.text)
+                popup.accept()
+            except ElementNotSelectableException:
+                try:
+                    ###text_backup = copy.deepcopy(popup.text)
+                    # FIXME currently can't differentiate between confirms and alerts, put both as alerts
+                    output['alerts'].append(popup.text)
+                    popup.dismiss()
+                    # If no exception, this is a *confirm* popup
+                    ###output['confirms'].append(text_backup)
+                except AttributeError:
+                    # Must be an *alert* popup at this point
+                    ###output['alerts'].append(popup.text)
+                    popup.accept()
+        except TimeoutException:
+            # Break on timeout, no (more) popups
+            break
+    output['errors'] = []
+    output['messages'] = []
+    # Get console errors and other messages
+    for log in driver.get_log('browser'):
+        if log['level'] and log['level'] == 'SEVERE':
+            # Consider this an error
+            output['errors'].append(log)
+        else:
+            # Everything else we'll call a console message
+            output['messages'].append(log)
+    output['body'] = driver.page_source
+    return json.dumps(output)
+
 ########################################################################################################################
 
 app = Flask(__name__)
@@ -165,6 +226,7 @@ def get_and_render():
                                                                             status=400, mimetype='text/plain')
                 if 'script' in request_json:
                     script_to_execute = request_json['script']
+                    # FIXME this (below) is being done too early
                     driver.execute_script(script_to_execute)
                 if 'invoke_events' in request_json:
                     parsed_invoke_events = request_json['invoke_events']
@@ -173,65 +235,8 @@ def get_and_render():
                             pass # TODO
                     else:
                         return Response('Input JSON has invalid "invoke_events"', status=400, mimetype='text/plain')
-                # Prep a har object to get this from the proxy
-                proxy.new_har('this_request')
-                # Execute request with headless Chrome
-                try:
-                    driver.get(target_url) # TODO eventually handle other HTTP methods about here
-                except:
-                    # *Right now assuming exception is for timeout*
-                    return Response('Request timed out', status=504, mimetype='text/plain')
-                output = {}
-                try:
-                    status_code_via_proxy = proxy.har['log']['entries'][0]['response']['status']
-                    output['status_code'] = status_code_via_proxy
-                except:
-                    output['status_code'] = 0
-                try:
-                    response_headers_via_proxy = proxy.har['log']['entries'][0]['response']['headers']
-                    output['headers'] = response_headers_via_proxy
-                except:
-                    output['headers'] = {}
-                output['alerts'] = []
-                output['confirms'] = []
-                output['prompts'] = []
-                # Loop to handle all JavaScript popups
-                while True:
-                    try:
-                        WebDriverWait(driver,1).until(EC.alert_is_present(), 'No JS popups - timed out.')
-                        popup = driver.switch_to.alert
-                        try:
-                            popup.send_keys('test123')
-                            # If no exception, this is a *prompt* popup
-                            output['prompts'].append(popup.text)
-                            popup.accept()
-                        except ElementNotSelectableException:
-                            try:
-                                ###text_backup = copy.deepcopy(popup.text)
-                                # FIXME currently can't differentiate between confirms and alerts, put both as alerts
-                                output['alerts'].append(popup.text)
-                                popup.dismiss()
-                                # If no exception, this is a *confirm* popup
-                                ###output['confirms'].append(text_backup)
-                            except AttributeError:
-                                # Must be an *alert* popup at this point
-                                ###output['alerts'].append(popup.text)
-                                popup.accept()
-                    except TimeoutException:
-                        # Break on timeout, no (more) popups
-                        break
-                output['errors'] = []
-                output['messages'] = []
-                # Get console errors and other messages
-                for log in driver.get_log('browser'):
-                    if log['level'] and log['level'] == 'SEVERE':
-                        # Consider this an error
-                        output['errors'].append(log)
-                    else:
-                        # Everything else we'll call a console message
-                        output['messages'].append(log)
-                output['body'] = driver.page_source
-                return json.dumps(output)
+                object_to_return = simple_get_and_render(target_url)
+                return object_to_return
             else:
                 return Response('Invalid URL: %s' % target_url, status=400, mimetype='text/plain')
         else:
@@ -262,10 +267,10 @@ def render_via_string():
                     canary_url = set_canary_triggered_request_interceptor(method, url, headers, body)
                 else:
                     canary_url = set_canary_triggered_request_interceptor(method, url, headers)
-                # TODO make a request to the canary url
-                # TODO store the output (response) object to send back
+                # Make a request to the canary URL, store output to later send back
+                object_to_return = simple_get_and_render(canary_url)
                 # TODO disable that canary-triggered request interceptor, we hypothetically shouldn't need it anymore
-                return Response('OK', status=200, mimetype='text/plain')
+                return object_to_return
             return Response('Functionality not yet implemented', status=501, mimetype='text/plain')
         elif 'response_string' in request_json:
             # TODO
