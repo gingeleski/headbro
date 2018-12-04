@@ -17,6 +17,8 @@ import copy
 import json
 import os
 import psutil
+import random
+import string
 import time
 import validators
 
@@ -88,9 +90,23 @@ def get_headers_from_request_string(rs):
 def get_body_from_request_string(rs):
     return rs.splitlines()[-1]
 
+def get_canary_string(length):
+    working_canary = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(length)])
+    print('DEBUG: generated canary ' + working_canary)
+    return working_canary
+
 def set_canary_triggered_request_interceptor(method, url, headers, body=None):
+    canary_url = 'http://a' + get_canary_string(8) + '.com'
+    interceptor_js = ''
     # TODO
-    return 'http://abcdefgh1234.com'
+    interceptor_js += 'if (messageInfo.getUrl().equals("' + canary_url + '")) { '
+    # FILLER START
+    interceptor_js += 'request.getMethod().removeHeaders("User-Agent");'
+    interceptor_js += ' '
+    interceptor_js += 'request.getMethod().addHeader("User-Agent", "Bananabot/1.0");'
+    # FILLER END
+    interceptor_js += ' };'
+    return canary_url
 
 def simple_get_and_render(target_url):
     # Prep a har object to get this from the proxy
@@ -269,7 +285,6 @@ def render_via_string():
                     canary_url = set_canary_triggered_request_interceptor(method, url, headers)
                 # Make a request to the canary URL, store output to later send back
                 object_to_return = simple_get_and_render(canary_url)
-                # TODO disable that canary-triggered request interceptor, we hypothetically shouldn't need it anymore
                 return object_to_return
             return Response('Functionality not yet implemented', status=501, mimetype='text/plain')
         elif 'response_string' in request_json:
