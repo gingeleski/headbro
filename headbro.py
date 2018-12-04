@@ -98,13 +98,19 @@ def get_canary_string(length):
 def set_canary_triggered_request_interceptor(method, url, headers, body=None):
     canary_url = 'http://a' + get_canary_string(8) + '.com'
     interceptor_js = ''
-    # TODO
     interceptor_js += 'if (messageInfo.getUrl().equals("' + canary_url + '")) { '
-    # FILLER START
-    interceptor_js += 'request.getMethod().removeHeaders("User-Agent");'
+    interceptor_js += 'request.setMethod("' + method + '");'
     interceptor_js += ' '
-    interceptor_js += 'request.getMethod().addHeader("User-Agent", "Bananabot/1.0");'
-    # FILLER END
+    interceptor_js += 'request.setUri("' + url + '");'
+    # cycle through headers and set
+    for h_name, h_value in headers.items():
+        interceptor_js += 'request.getMethod().removeHeaders("' + h_name + '");'
+        interceptor_js += ' '
+        interceptor_js += 'request.getMethod().addHeader("' + h_name + '", "' + h_value + '");'
+    if body != None:
+        interceptor_js += ' '
+        # TODO consider making sure the body is safely encoded, or at least escape " chars
+        interceptor_js += 'contents.setTextContents("' + body + '");'
     interceptor_js += ' };'
     return canary_url
 
