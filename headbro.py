@@ -42,7 +42,7 @@ def request_string_is_valid(rs):
 def derive_url_from_request_string(rs):
     derived_url = ''
     # Relative target - get from the first "/"" to " HTTP/"
-    rel_target_part = rs.startswith(' HTTP/')[0]
+    rel_target_part = rs.split(' HTTP/')[0]
     if rs.startswith('GET ') or rs.startswih('PUT '):
         rel_target = rel_target_part[4:]
     elif rs.startswith('POST '):
@@ -77,9 +77,9 @@ def get_headers_from_request_string(rs):
     headers = {}
     rs_lines = rs.splitlines()
     for rs_line in rs_lines:
-        if rs_line.contains('HTTP/1.1'):
+        if 'HTTP/1.1' in rs_line:
             continue
-        elif rs_line.contains(': '):
+        elif ': ' in rs_line:
             header_parts = rs_line.split(': ')
             headers[header_parts[0]] = header_parts[1]
         else:
@@ -91,7 +91,7 @@ def get_body_from_request_string(rs):
     return rs.splitlines()[-1]
 
 def get_canary_string(length):
-    working_canary = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(length)])
+    working_canary = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(length)])
     print('DEBUG: generated canary ' + working_canary)
     return working_canary
 
@@ -272,7 +272,7 @@ def render_via_string():
     try:
         request_json = json.loads(request_body)
         if 'request_string' in request_json:
-            request_string = request_json['request_json']
+            request_string = request_json['request_string']
             if request_string_is_valid(request_string):
                 if 'url' in request_json:
                     url = request_json['url']
