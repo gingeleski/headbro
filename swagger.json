@@ -202,6 +202,52 @@
         }
       },
       "x-oad-type": "operation"
+    },
+    "/render/string": {
+      "post": {
+        "operationId": "render.string.post",
+        "summary": "Yields an HTTP request or response rendered with headless Chrome, based entirely on a string passed in.",
+        "description": "Yields an HTTP request or response rendered with headless Chrome, based entirely on a string passed in.",
+        "responses": {
+          "200": {
+            "description": "Normal or \"happy path\" response.",
+            "schema": {
+              "x-oad-type": "object",
+              "type": "object"
+            },
+            "x-oad-type": "response"
+          },
+          "400": {
+            "description": "Bad request error; inputs did not pass validation.",
+            "x-oad-type": "response"
+          }
+        },
+        "parameters": [
+          {
+            "name": "request_string",
+            "in": "body",
+            "description": "A request string such as those found in Burp Suite's proxy log.",
+            "required": false,
+            "schema": {
+              "x-oad-type": "string",
+              "type": "string"
+            },
+            "x-oad-type": "parameter"
+          },
+          {
+            "name": "response_string",
+            "in": "body",
+            "description": "A response string such as those found in Burp Suite's proxy log.",
+            "required": false,
+            "schema": {
+              "x-oad-type": "string",
+              "type": "string"
+            },
+            "x-oad-type": "parameter"
+          }
+        ]
+      },
+      "x-oad-type": "operation"
     }
   },
   "info": {
@@ -210,7 +256,7 @@
     "description": "Headless browser rendering service for HTTP responses.",
     "contact": {
       "name": "Randy Gingeleski",
-      "url": "https://github.com/gingeleski/headbro"
+      "url": "https://github.com/gingeleski"
     },
     "license": {
       "name": "GNU General Public License v3",
