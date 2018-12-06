@@ -98,7 +98,7 @@ def get_canary_string(length):
 def set_canary_triggered_request_interceptor(method, url, headers, body=None):
     canary_url = 'http://a' + get_canary_string(8) + '.com'
     interceptor_js = ''
-    interceptor_js += 'if (messageInfo.getUrl().equals("' + canary_url + '")) { '
+    interceptor_js += 'if (messageInfo.getUrl().includes("' + canary_url + '")) { '
     interceptor_js += 'request.setMethod("' + method + '");'
     interceptor_js += ' '
     interceptor_js += 'request.setUri("' + url + '");'
