@@ -96,9 +96,10 @@ def get_canary_string(length):
     return working_canary
 
 def set_canary_triggered_request_interceptor(method, url, headers, body=None):
-    canary_url = 'http://a' + get_canary_string(8) + '.com'
+    this_canary_string = get_canary_string(8)
+    canary_url = 'http://a' + this_canary_string + '.com'
     interceptor_js = ''
-    interceptor_js += 'if (messageInfo.getUrl().includes("' + canary_url + '")) { '
+    interceptor_js += 'if (messageInfo.getUrl().includes("' + this_canary_string + '")) { '
     interceptor_js += 'request.setMethod("' + method + '");'
     interceptor_js += ' '
     interceptor_js += 'request.setUri("' + url + '");'
@@ -112,6 +113,8 @@ def set_canary_triggered_request_interceptor(method, url, headers, body=None):
         # TODO consider making sure the body is safely encoded, or at least escape " chars
         interceptor_js += 'contents.setTextContents("' + body + '");'
     interceptor_js += ' };'
+    # Actually set the interceptor!
+    proxy.request_interceptor(interceptor_js)
     return canary_url
 
 def simple_get_and_render(target_url):
