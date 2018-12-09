@@ -111,11 +111,14 @@ def do_browsermob_interceptor(js):
     return
 
 def set_canary_triggered_request_interceptor(method, url, headers, body=None):
-    this_canary_string = get_canary_string(8)
+    this_canary_string = get_canary_string(8).lower()
     canary_url = 'http://a' + this_canary_string + '.com'
     interceptor_js = ''
-    interceptor_js += 'request.setUri("' + url + '");'
+    interceptor_js += 'if (messageInfo.getUrl().includes("' + this_canary_string + '")) { '		
+    interceptor_js += 'request.setUri("' + url + '");'	
+    interceptor_js += ' };'
     do_browsermob_interceptor(interceptor_js)
+    time.sleep(2)
     return canary_url
 
 def simple_get_and_render(target_url):
