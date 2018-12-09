@@ -105,6 +105,7 @@ def do_browsermob_interceptor(js):
                           data=js,
                           headers={'content-type': 'text/plain'})
     print('DEBUG: start dump of response from setting Browsermob interceptor')
+    print(r)
     print(r.text)
     print('DEBUG: end dump of response from setting Browsermob interceptor')
     return
@@ -113,22 +114,7 @@ def set_canary_triggered_request_interceptor(method, url, headers, body=None):
     this_canary_string = get_canary_string(8)
     canary_url = 'http://a' + this_canary_string + '.com'
     interceptor_js = ''
-    interceptor_js += 'if (messageInfo.getUrl().includes("' + this_canary_string + '")) { '
-    interceptor_js += 'request.setMethod("' + method + '");'
-    interceptor_js += ' '
     interceptor_js += 'request.setUri("' + url + '");'
-    interceptor_js += ' '
-    # cycle through headers and set
-    for h_name, h_value in headers.items():
-        interceptor_js += 'request.getMethod().removeHeaders("' + h_name + '");'
-        interceptor_js += ' '
-        interceptor_js += 'request.getMethod().addHeader("' + h_name + '", "' + h_value + '");'
-        interceptor_js += ' '
-    if body != None:
-        interceptor_js += ' '
-        # TODO consider making sure the body is safely encoded, or at least escape " chars
-        interceptor_js += 'contents.setTextContents("' + body + '");'
-    interceptor_js += ' };'
     do_browsermob_interceptor(interceptor_js)
     return canary_url
 
