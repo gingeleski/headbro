@@ -18,6 +18,7 @@ import json
 import os
 import psutil
 import random
+import requests
 import string
 import time
 import validators
@@ -95,6 +96,19 @@ def get_canary_string(length):
     print('DEBUG: generated canary ' + working_canary)
     return working_canary
 
+def do_browsermob_interceptor(js):
+    """
+    Credit to browsermobproxy library for this method...
+    forked it here for more control and better debugging
+    """
+    r = requests.post(url='%s/proxy/%s/filter/request' % (proxy.host, proxy.port),
+                          data=js,
+                          headers={'content-type': 'text/plain'})
+    print('DEBUG: start dump of response from setting Browsermob interceptor')
+    print(r.text)
+    print('DEBUG: end dump of response from setting Browsermob interceptor')
+    return
+
 def set_canary_triggered_request_interceptor(method, url, headers, body=None):
     this_canary_string = get_canary_string(8)
     canary_url = 'http://a' + this_canary_string + '.com'
@@ -103,18 +117,19 @@ def set_canary_triggered_request_interceptor(method, url, headers, body=None):
     interceptor_js += 'request.setMethod("' + method + '");'
     interceptor_js += ' '
     interceptor_js += 'request.setUri("' + url + '");'
+    interceptor_js += ' '
     # cycle through headers and set
     for h_name, h_value in headers.items():
         interceptor_js += 'request.getMethod().removeHeaders("' + h_name + '");'
         interceptor_js += ' '
         interceptor_js += 'request.getMethod().addHeader("' + h_name + '", "' + h_value + '");'
+        interceptor_js += ' '
     if body != None:
         interceptor_js += ' '
         # TODO consider making sure the body is safely encoded, or at least escape " chars
         interceptor_js += 'contents.setTextContents("' + body + '");'
     interceptor_js += ' };'
-    # Actually set the interceptor!
-    proxy.request_interceptor(interceptor_js)
+    do_browsermob_interceptor(interceptor_js)
     return canary_url
 
 def simple_get_and_render(target_url):
