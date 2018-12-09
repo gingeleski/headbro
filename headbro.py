@@ -114,8 +114,23 @@ def set_canary_triggered_request_interceptor(method, url, headers, body=None):
     this_canary_string = get_canary_string(8).lower()
     canary_url = 'http://a' + this_canary_string + '.com'
     interceptor_js = ''
-    interceptor_js += 'if (messageInfo.getUrl().includes("' + this_canary_string + '")) { '		
+    interceptor_js += 'if (messageInfo.getUrl().includes("' + this_canary_string + '")) { '
+    interceptor_js += 'request.setMethod("' + method + '");'
+    interceptor_js += ' '
     interceptor_js += 'request.setUri("' + url + '");'	
+    # cycle through headers and set
+    # FIXME something in the below code doesn't compile (BrowserMob JS compilation)
+    """
+    for h_name, h_value in headers.items():
+        interceptor_js += 'request.getMethod().removeHeaders("' + h_name + '");'
+        interceptor_js += ' '
+        interceptor_js += 'request.getMethod().addHeader("' + h_name + '", "' + h_value + '");'
+        interceptor_js += ' '
+    if body != None:
+        interceptor_js += ' '
+        # TODO consider making sure the body is safely encoded, or at least escape " chars
+        interceptor_js += 'contents.setTextContents("' + body + '");'
+    """
     interceptor_js += ' };'
     do_browsermob_interceptor(interceptor_js)
     time.sleep(2)
