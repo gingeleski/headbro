@@ -162,6 +162,11 @@ def simple_get_and_render(target_url):
 
 app = Flask(__name__)
 
+# Configure mitmproxy
+mitm_start_opts = options.Options(listen_host='127.0.0.1', listen_port=9010)
+mitm_pconf = proxy.config.ProxyConfig(mitm_start_opts)
+proxy.server.ProxyServer(mitm_pconf)
+
 # Set up the Selenium driver for headless Chrome
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('headless')
