@@ -5,8 +5,8 @@ Headless browser rendering service for HTTP responses.
 
 """
 
-from browsermobproxy import Server
 from flask import Flask, request, Response
+from mitmproxy import proxy, options
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -25,12 +25,7 @@ import validators
 
 ########################################################################################################################
 
-BROWSERMOB_PROXY_PATH = os.path.join('dependencies', 'browsermob-proxy-2.1.4', 'bin', 'browsermob-proxy')
-
-########################################################################################################################
-
 def exit_handler():
-    browsermob_server.stop()
     driver.quit()
 
 def request_string_is_valid(rs):
@@ -96,49 +91,15 @@ def get_canary_string(length):
     print('DEBUG: generated canary ' + working_canary)
     return working_canary
 
-def do_browsermob_interceptor(js):
-    """
-    Credit to browsermobproxy library for this method...
-    forked it here for more control and better debugging
-    """
-    r = requests.post(url='%s/proxy/%s/filter/request' % (proxy.host, proxy.port),
-                          data=js,
-                          headers={'content-type': 'text/plain'})
-    print('DEBUG: start dump of response from setting Browsermob interceptor')
-    print(r)
-    print(r.text)
-    print('DEBUG: end dump of response from setting Browsermob interceptor')
-    return
-
 def set_canary_triggered_request_interceptor(method, url, headers, body=None):
     this_canary_string = get_canary_string(8).lower()
     canary_url = 'http://a' + this_canary_string + '.com'
-    interceptor_js = ''
-    interceptor_js += 'if (messageInfo.getUrl().includes("' + this_canary_string + '")) { '
-    interceptor_js += 'request.setMethod("' + method + '");'
-    interceptor_js += ' '
-    interceptor_js += 'request.setUri("' + url + '");'	
-    # cycle through headers and set
-    # FIXME something in the below code doesn't compile (BrowserMob JS compilation)
-    """
-    for h_name, h_value in headers.items():
-        interceptor_js += 'request.getMethod().removeHeaders("' + h_name + '");'
-        interceptor_js += ' '
-        interceptor_js += 'request.getMethod().addHeader("' + h_name + '", "' + h_value + '");'
-        interceptor_js += ' '
-    if body != None:
-        interceptor_js += ' '
-        # TODO consider making sure the body is safely encoded, or at least escape " chars
-        interceptor_js += 'contents.setTextContents("' + body + '");'
-    """
-    interceptor_js += ' };'
-    do_browsermob_interceptor(interceptor_js)
-    time.sleep(2)
+    # TODO configure interceptor somehow
+    # TODO would set interceptor here
+    # TODO time.sleep(2) as needed?
     return canary_url
 
 def simple_get_and_render(target_url):
-    # Prep a har object to get this from the proxy
-    proxy.new_har('this_request')
     # Execute request with headless Chrome
     try:
         driver.get(target_url)
@@ -201,22 +162,10 @@ def simple_get_and_render(target_url):
 
 app = Flask(__name__)
 
-# Set up BrowserMob proxy
-for proc in psutil.process_iter():
-    # Kill BrowserMob if it happens to already be running
-    if proc.name() == 'browsermob-proxy':
-        proc.kill()
-browsermob_options = {'port': 8090}
-browsermob_server = Server(path=BROWSERMOB_PROXY_PATH, options=browsermob_options)
-browsermob_server.start()
-time.sleep(1)
-proxy = browsermob_server.create_proxy()
-time.sleep(1)
-
 # Set up the Selenium driver for headless Chrome
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('headless')
-chrome_options.add_argument('proxy-server={0}'.format(proxy.proxy))
+# TODO set proxy? chrome_options.add_argument('proxy-server={0}'.format(proxy.proxy))
 # Start: "Pen testing" options
 chrome_options.add_argument('disable-web-security')
 chrome_options.add_argument('allow-running-insecure-content')
