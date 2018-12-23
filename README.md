@@ -11,9 +11,11 @@ Then you'll also need to download the [**BrowserMob v2.1.4 binaries**](https://g
 
 BrowserMob relies on Java so ensure that's on the path such that you can run `java` from a prompt.
 
+You'll find an SSL certificate you need to install within that BrowserMob zip. This is in order to view `https://` traffic. The filename to look for is `ca-certificate-rsa.cer`.
+
 The main code is Python 3.x based, in case that's not clear. You need `python` and `pip` to be available from your prompt.
 
-Now do the following from your prompt, recommended with a [**virtual environment**](https://docs.python.org/3/library/venv.html).
+Now do the following from your prompt, ideally in a [**virtual environment**](https://docs.python.org/3/library/venv.html).
 
 ```
 pip install -r requirements.txt
