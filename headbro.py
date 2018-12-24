@@ -92,7 +92,7 @@ def get_body_from_request_string(rs):
     return rs.splitlines()[-1]
 
 def get_canary_string(length):
-    working_canary = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(length)])
+    working_canary = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(length)]).lower()
     print('DEBUG: generated canary ' + working_canary)
     return working_canary
 
@@ -104,10 +104,6 @@ def do_browsermob_interceptor(js):
     r = requests.post(url='%s/proxy/%s/filter/request' % (proxy.host, proxy.port),
                           data=js,
                           headers={'content-type': 'text/plain'})
-    print('DEBUG: start dump of response from setting Browsermob interceptor')
-    print(r)
-    print(r.text)
-    print('DEBUG: end dump of response from setting Browsermob interceptor')
     return
 
 def set_canary_triggered_request_interceptor(method, url, headers, body=None):
@@ -138,7 +134,7 @@ def set_canary_triggered_request_interceptor(method, url, headers, body=None):
 
 def simple_get_and_render(target_url):
     # Prep a har object to get this from the proxy
-    proxy.new_har('this_request')
+    proxy.new_har('this_request', options={'captureHeaders': True})
     # Execute request with headless Chrome
     try:
         driver.get(target_url)
