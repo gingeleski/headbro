@@ -96,14 +96,10 @@ def get_canary_string(length):
     print('DEBUG: generated canary ' + working_canary)
     return working_canary
 
-def do_browsermob_interceptor(js):
-    """
-    Credit to browsermobproxy library for this method...
-    forked it here for more control and better debugging
-    """
-    r = requests.post(url='%s/proxy/%s/filter/request' % (proxy.host, proxy.port),
+def do_browsermob_interceptor(js, type_='request'):
+    r = requests.post(url='%s/proxy/%s/filter/%s' % (proxy.host, proxy.port, type_),
                           data=js,
-                          headers={'content-type': 'text/plain'})
+                          headers={'content-type':'text/plain'})
     return
 
 def set_canary_triggered_request_interceptor(method, url, headers, body=None):
@@ -202,7 +198,7 @@ for proc in psutil.process_iter():
     # Kill BrowserMob if it happens to already be running
     if proc.name() == 'browsermob-proxy':
         proc.kill()
-browsermob_options = {'port': 8090}
+browsermob_options = {'port':8090}
 browsermob_server = Server(path=BROWSERMOB_PROXY_PATH, options=browsermob_options)
 browsermob_server.start()
 time.sleep(1)
