@@ -134,7 +134,7 @@ def set_canary_triggered_request_interceptor(method, url, headers, body=None):
 
 def simple_get_and_render(target_url):
     # Prep a har object to get this from the proxy
-    proxy.new_har('this_request', options={'captureHeaders': True})
+    proxy.new_har('this_request', options={'captureHeaders':True,'captureContent':True})
     # Execute request with headless Chrome
     try:
         driver.get(target_url)
