@@ -14,4 +14,4 @@ selenium==3.14.1
 six==1.11.0
 urllib3>=1.24.2
 validators==0.12.6
-Werkzeug==0.15.3
+Werkzeug==0.15.5
